@@ -1,0 +1,236 @@
+
+/* =========================================
+   HabitFlow - Main Stylesheet
+   ========================================= */
+
+/* Colour variables */
+:root {
+    --background: #f8f9fb;
+    --surface: #ffffff;
+    --card-background: #eeeeee;
+    --text-primary: #202124;
+    --text-secondary: #6b7280;
+    --accent: #3b82f6;
+    --border: #e5e7eb;
+}
+
+/* Reset and general styles */
+* {
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+    background: var(--background);
+    color: var(--text-primary);
+    font-family: Arial, Helvetica, sans-serif;
+    line-height: 1.5;
+}
+
+button,
+input {
+    font: inherit;
+}
+
+button {
+    cursor: pointer;
+}
+
+button:focus-visible,
+input:focus-visible {
+    outline: 3px solid var(--accent);
+    outline-offset: 3px;
+}
+
+/* Main mobile app container */
+.app {
+    width: 100%;
+    max-width: 480px;
+    min-height: 100vh;
+    min-height: 100dvh;
+    margin: 0 auto;
+    background: var(--surface);
+    padding-bottom: 95px;
+}
+
+/* Header */
+.app-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 16px;
+    padding: 24px 20px 12px;
+}
+
+.app-header h1 {
+    margin: 0;
+    font-size: 26px;
+}
+
+#current-date {
+    margin: 0;
+    color: var(--text-secondary);
+    font-size: 13px;
+    text-align: right;
+}
+
+/* Screen content */
+main {
+    padding: 8px 20px 24px;
+}
+
+.screen h2 {
+    margin: 0 0 24px;
+    font-size: 22px;
+}
+
+.screen h3 {
+    margin: 26px 0 10px;
+    color: var(--text-secondary);
+    font-size: 16px;
+}
+
+/* Hide inactive screens */
+[hidden] {
+    display: none !important;
+}
+
+/* Habit cards - used later in JavaScript */
+.habit-card {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    background: var(--card-background);
+    padding: 16px;
+    margin-bottom: 12px;
+    border-radius: 10px;
+}
+
+.habit-card input[type="checkbox"] {
+    width: 22px;
+    height: 22px;
+    accent-color: var(--accent);
+}
+
+/* Daily progress */
+.daily-progress {
+    margin-top: 28px;
+}
+
+.daily-progress p {
+    margin-bottom: 10px;
+    font-weight: bold;
+}
+
+#daily-progress-bar {
+    display: block;
+    width: 100%;
+    height: 14px;
+    accent-color: var(--accent);
+}
+
+/* General buttons */
+#add-habit-button,
+#export-data-button,
+#reset-progress-button {
+    width: 100%;
+    padding: 14px 16px;
+    margin-bottom: 12px;
+    border: none;
+    border-radius: 10px;
+    background: var(--card-background);
+    color: var(--text-primary);
+    text-align: left;
+}
+
+#add-habit-button {
+    background: var(--accent);
+    color: white;
+    font-weight: bold;
+}
+
+/* Settings */
+#settings-screen label {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+    padding: 14px 16px;
+    margin-bottom: 12px;
+    border-radius: 10px;
+    background: var(--card-background);
+}
+
+#settings-screen input[type="checkbox"] {
+    width: 22px;
+    height: 22px;
+    accent-color: var(--accent);
+}
+
+#reminder-time {
+    width: 100%;
+    padding: 12px;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    background: var(--surface);
+    color: var(--text-primary);
+}
+
+/* Fixed bottom navigation */
+.bottom-nav {
+    position: fixed;
+    bottom: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    width: 100%;
+    max-width: 480px;
+    padding: 10px 8px calc(10px + env(safe-area-inset-bottom));
+    border-top: 1px solid var(--border);
+    background: var(--surface);
+}
+
+.nav-button {
+    flex: 1;
+    padding: 12px 4px;
+    border: none;
+    border-radius: 8px;
+    background: transparent;
+    color: var(--text-secondary);
+    font-size: 13px;
+}
+
+.nav-button.active {
+    background: #e8f0ff;
+    color: #1d4ed8;
+    font-weight: bold;
+}
+
+/* Responsive desktop preview */
+@media (min-width: 600px) {
+    body {
+        padding: 20px;
+    }
+
+    .app {
+        min-height: calc(100vh - 40px);
+        border: 1px solid var(--border);
+        border-radius: 16px;
+    }
+}
+
+/* Dark mode - activated by JavaScript later */
+body.dark-mode {
+    --background: #111827;
+    --surface: #1f2937;
+    --card-background: #374151;
+    --text-primary: #f9fafb;
+    --text-secondary: #d1d5db;
+    --border: #4b5563;
+}
+
+body.dark-mode .nav-button.active {
+    background: #1e3a8a;
+    color: #ffffff;
+}
