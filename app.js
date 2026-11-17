@@ -441,17 +441,56 @@ function deleteHabitFromDatabase(habitId) {
 
 
 /* =========================================
+   IndexedDB - Load Habits
+   ========================================= */
+
+function loadHabitsFromDatabase() {
+    return new Promise((resolve, reject) => {
+        const transaction = db.transaction(
+            HABIT_STORE,
+            "readonly"
+        );
+
+        const store = transaction.objectStore(HABIT_STORE);
+
+        // Retrieve every saved habit
+        const request = store.getAll();
+
+        request.onsuccess = () => {
+            resolve(request.result);
+        };
+
+        request.onerror = () => {
+            reject(request.error);
+        };
+    });
+}
+
+
+
+/* =========================================
    Application Initialisation
    ========================================= */
 
 async function initialiseApp() {
     try {
+        // Open the IndexedDB database
         await openDatabase();
 
         console.log("HabitFlow database opened successfully!");
+
+        // Load saved habits into our JavaScript array
+        habits = await loadHabitsFromDatabase();
+
+        // Display the loaded habits
+        renderHabits();
+
+        console.log(`Loaded ${habits.length} habits from IndexedDB`);
+
     } catch (error) {
-        console.error("Failed to open HabitFlow database:", error);
+        console.error("Failed to initialise HabitFlow:", error);
     }
 }
 
 initialiseApp();
+
