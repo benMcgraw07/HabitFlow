@@ -102,60 +102,89 @@ cancelHabitButton.addEventListener("click", () => {
 });
 
 
-// Handle form submission
-habitForm.addEventListener("submit", (event) => {
+
+
+/* Handle habit creation and editing */
+habitForm.addEventListener("submit", async (event) => {
     event.preventDefault();
 
     const habitName = habitNameInput.value.trim();
 
-    // Get all selected weekday values
     const selectedDays = Array.from(
         habitForm.querySelectorAll('input[name="weekdays"]:checked')
     ).map((checkbox) => Number(checkbox.value));
 
-    // Validate the input
+    // Validate user input
     if (!habitName || selectedDays.length === 0) {
-        formError.textContent = "Enter a habit name and select at least one weekday.";
+        formError.textContent =
+            "Enter a habit name and select at least one weekday.";
         formError.hidden = false;
         return;
     }
 
-    // Create a new habit object or edit habit object
+    let habitToSave;
 
     if (editingHabitId === null) {
-        // ADD: Create a new habit
-        const newHabit = {
+        // Create a new habit
+        habitToSave = {
             id: crypto.randomUUID(),
             name: habitName,
             weekdays: selectedDays
         };
-
-        habits.push(newHabit);
     } else {
-        // EDIT: Update the existing habit
-        const habit = habits.find(
+        // Find the habit being edited
+        const existingHabit = habits.find(
             (habit) => habit.id === editingHabitId
         );
 
-        if (habit) {
-            habit.name = habitName;
-            habit.weekdays = selectedDays;
+        if (!existingHabit) {
+            formError.textContent = "Habit not found.";
+            formError.hidden = false;
+            return;
         }
+
+        // Preserve the existing ID
+        habitToSave = {
+            ...existingHabit,
+            name: habitName,
+            weekdays: selectedDays
+        };
     }
 
-    // Clear editing mode
-    editingHabitId = null;
+    // Save to IndexedDB
+    try {
+        await saveHabitToDatabase(habitToSave);
+    } catch (error) {
+        console.error("Failed to save habit:", error);
+        formError.textContent =
+            "Unable to save habit. Please try again.";
+        formError.hidden = false;
+        return;
+    }
 
+    // Update the application's habit array
+    if (editingHabitId === null) {
+        habits.push(habitToSave);
+    } else {
+        const index = habits.findIndex(
+            (habit) => habit.id === editingHabitId
+        );
 
-    // Update the screen
+        habits[index] = habitToSave;
+    }
+
+    // Refresh the interface
     renderHabits();
 
-    // Reset and close the form
+    // Reset the form
+    editingHabitId = null;
     habitForm.reset();
     habitForm.hidden = true;
     addHabitButton.hidden = false;
     formError.hidden = true;
 });
+
+
 
 // Convert weekday numbers into readable names
 function formatWeekdays(days) {
@@ -263,34 +292,46 @@ function editHabit(habitId) {
 }
 
 // Delete an existing habit
-function deleteHabit(habitId) {
+
+async function deleteHabit(habitId) {
     const habit = habits.find(
         (habit) => habit.id === habitId
     );
 
     if (!habit) return;
 
-    // Ask for confirmation before deleting
     const confirmed = confirm(
         `Are you sure you want to delete "${habit.name}"?`
     );
 
     if (!confirmed) return;
 
-    habits = habits.filter(
-        (habit) => habit.id !== habitId
-    );
+    try {
+        // First, delete from IndexedDB
+        await deleteHabitFromDatabase(habitId);
 
-    // Close the form if this habit was being edited
-    if (editingHabitId === habitId) {
-        editingHabitId = null;
-        habitForm.reset();
-        habitForm.hidden = true;
-        addHabitButton.hidden = false;
+        // Then update the application's array
+        habits = habits.filter(
+            (habit) => habit.id !== habitId
+        );
+
+        // Close the form if necessary
+        if (editingHabitId === habitId) {
+            editingHabitId = null;
+            habitForm.reset();
+            habitForm.hidden = true;
+            addHabitButton.hidden = false;
+        }
+
+        // Update the screen
+        renderHabits();
+
+    } catch (error) {
+        console.error("Failed to delete habit:", error);
+        alert("Unable to delete habit. Please try again.");
     }
-
-    renderHabits();
 }
+
 
 
 
@@ -329,6 +370,70 @@ function openDatabase() {
         // Something went wrong
         request.onerror = () => {
             reject(request.error);
+        };
+    });
+}
+
+
+/* =========================================
+   IndexedDB - Save Habit
+   ========================================= */
+
+function saveHabitToDatabase(habit) {
+    return new Promise((resolve, reject) => {
+        const transaction = db.transaction(
+            HABIT_STORE,
+            "readwrite"
+        );
+
+        const store = transaction.objectStore(HABIT_STORE);
+
+        // Add a new habit or update an existing one
+        store.put(habit);
+
+        // Resolve only when the transaction has completed
+        transaction.oncomplete = () => {
+            resolve();
+        };
+
+        transaction.onerror = () => {
+            reject(transaction.error);
+        };
+
+        transaction.onabort = () => {
+            reject(transaction.error);
+        };
+    });
+}
+
+
+
+/* =========================================
+   IndexedDB - Delete Habit
+   ========================================= */
+
+function deleteHabitFromDatabase(habitId) {
+    return new Promise((resolve, reject) => {
+        const transaction = db.transaction(
+            HABIT_STORE,
+            "readwrite"
+        );
+
+        const store = transaction.objectStore(HABIT_STORE);
+
+        // Delete the habit using its unique ID
+        store.delete(habitId);
+
+        transaction.oncomplete = () => {
+            resolve();
+        };
+
+        transaction.onerror = () => {
+            reject(transaction.error);
+        };
+
+        transaction.onabort = () => {
+            reject(transaction.error);
         };
     });
 }
