@@ -175,6 +175,7 @@ habitForm.addEventListener("submit", async (event) => {
 
     // Refresh the interface
     renderHabits();
+    renderTodayHabits();
 
     // Reset the form
     editingHabitId = null;
@@ -251,8 +252,63 @@ function renderHabits() {
 }
 
 
+/* =========================================
+   HabitFlow - Today Screen
+   ========================================= */
+
+function renderTodayHabits() {
+    const todayHabitsContainer =
+        document.getElementById("today-habits");
+
+    const progressCount =
+        document.getElementById("progress-count");
+
+    const progressBar =
+        document.getElementById("daily-progress-bar");
+
+    // Get the current weekday (0 = Sunday, 6 = Saturday)
+    const today = new Date().getDay();
+
+    // Find habits scheduled for today
+    const todayHabits = habits.filter((habit) =>
+        habit.weekdays.includes(today)
+    );
+
+    // Clear previously displayed habits
+    todayHabitsContainer.replaceChildren();
+
+    // Display an empty state if nothing is scheduled
+    if (todayHabits.length === 0) {
+        const message = document.createElement("p");
+        message.textContent = "No habits scheduled for today.";
+        todayHabitsContainer.appendChild(message);
+    }
+
+    // Display today's scheduled habits
+    todayHabits.forEach((habit) => {
+        const card = document.createElement("div");
+        card.className = "habit-card";
+
+        const name = document.createElement("strong");
+        name.textContent = habit.name;
+
+        card.appendChild(name);
+        todayHabitsContainer.appendChild(card);
+    });
+
+    // Initial progress display
+    // Completion tracking will be added next
+    progressCount.textContent = `0/${todayHabits.length}`;
+
+    progressBar.max = Math.max(todayHabits.length, 1);
+    progressBar.value = 0;
+}
+
+
+
 // Display the empty state when the app first loads
 renderHabits();
+renderTodayHabits();
 
 
 
@@ -325,6 +381,7 @@ async function deleteHabit(habitId) {
 
         // Update the screen
         renderHabits();
+        renderTodayHabits();
 
     } catch (error) {
         console.error("Failed to delete habit:", error);
@@ -484,6 +541,7 @@ async function initialiseApp() {
 
         // Display the loaded habits
         renderHabits();
+        renderTodayHabits();
 
         console.log(`Loaded ${habits.length} habits from IndexedDB`);
 
