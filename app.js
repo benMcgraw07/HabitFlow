@@ -59,7 +59,9 @@ showScreen("today-screen");
 
 // Temporary habit storage (IndexedDB comes later)
 let habits = [];
+let completions = [];
 let editingHabitId = null;
+
 
 // Find the form elements
 const addHabitButton = document.getElementById("add-habit-button");
@@ -256,52 +258,94 @@ function renderHabits() {
    HabitFlow - Today Screen
    ========================================= */
 
+
 function renderTodayHabits() {
-    const todayHabitsContainer =
-        document.getElementById("today-habits");
+    const container = document.getElementById("today-habits");
+    const progressCount = document.getElementById("progress-count");
+    const progressBar = document.getElementById("daily-progress-bar");
 
-    const progressCount =
-        document.getElementById("progress-count");
-
-    const progressBar =
-        document.getElementById("daily-progress-bar");
-
-    // Get the current weekday (0 = Sunday, 6 = Saturday)
     const today = new Date().getDay();
+    const date = getTodayDate();
 
-    // Find habits scheduled for today
+    // Only habits scheduled for today
     const todayHabits = habits.filter((habit) =>
         habit.weekdays.includes(today)
     );
 
-    // Clear previously displayed habits
-    todayHabitsContainer.replaceChildren();
+    container.replaceChildren();
 
-    // Display an empty state if nothing is scheduled
+    let completedCount = 0;
+
     if (todayHabits.length === 0) {
         const message = document.createElement("p");
         message.textContent = "No habits scheduled for today.";
-        todayHabitsContainer.appendChild(message);
+        container.appendChild(message);
     }
 
-    // Display today's scheduled habits
     todayHabits.forEach((habit) => {
+        const completionId = `${habit.id}_${date}`;
+
+        const isCompleted = completions.some(
+            (completion) => completion.id === completionId
+        );
+
+        if (isCompleted) {
+            completedCount++;
+        }
+
+        // Create the habit card
         const card = document.createElement("div");
         card.className = "habit-card";
 
-        const name = document.createElement("strong");
+        const label = document.createElement("label");
+        label.className = "completion-label";
+
+        const checkbox = document.createElement("input");
+        checkbox.type = "checkbox";
+        checkbox.checked = isCompleted;
+
+        const name = document.createElement("span");
         name.textContent = habit.name;
 
-        card.appendChild(name);
-        todayHabitsContainer.appendChild(card);
+        // Save changes when the checkbox is toggled
+        checkbox.addEventListener("change", async () => {
+            checkbox.disabled = true;
+
+            try {
+                await updateCompletionInDatabase(
+                    habit.id,
+                    date,
+                    checkbox.checked
+                );
+
+                // Reload the completion records
+                completions = await loadCompletionsFromDatabase();
+
+                // Refresh today's progress
+                renderTodayHabits();
+
+            } catch (error) {
+                console.error("Failed to update completion:", error);
+
+                checkbox.checked = !checkbox.checked;
+
+                alert("Unable to update habit completion.");
+            } finally {
+                checkbox.disabled = false;
+            }
+        });
+
+        label.append(checkbox, name);
+        card.appendChild(label);
+        container.appendChild(card);
     });
 
-    // Initial progress display
-    // Completion tracking will be added next
-    progressCount.textContent = `0/${todayHabits.length}`;
+    // Update daily progress
+    progressCount.textContent =
+        `${completedCount}/${todayHabits.length}`;
 
     progressBar.max = Math.max(todayHabits.length, 1);
-    progressBar.value = 0;
+    progressBar.value = completedCount;
 }
 
 
@@ -396,9 +440,15 @@ async function deleteHabit(habitId) {
    IndexedDB - Local Database
    ========================================= */
 
+
+
 const DB_NAME = "HabitFlowDB";
-const DB_VERSION = 1;
+const DB_VERSION = 3;
+
 const HABIT_STORE = "habits";
+const COMPLETION_STORE = "completions";
+
+
 
 let db = null;
 
@@ -408,6 +458,8 @@ function openDatabase() {
         const request = indexedDB.open(DB_NAME, DB_VERSION);
 
         // Runs when the database is first created
+        
+        
         request.onupgradeneeded = (event) => {
             const database = event.target.result;
 
@@ -416,7 +468,15 @@ function openDatabase() {
                     keyPath: "id"
                 });
             }
+
+            if (!database.objectStoreNames.contains(COMPLETION_STORE)) {
+                database.createObjectStore(COMPLETION_STORE, {
+                    keyPath: "id"
+                });
+            }
         };
+
+
 
         // Database opened successfully
         request.onsuccess = () => {
@@ -524,6 +584,79 @@ function loadHabitsFromDatabase() {
 }
 
 
+/* =========================================
+   HabitFlow - Completion Tracking
+   ========================================= */
+
+// Get today's date in local YYYY-MM-DD format
+function getTodayDate() {
+    const today = new Date();
+
+    const year = today.getFullYear();
+    const month = String(today.getMonth() + 1).padStart(2, "0");
+    const day = String(today.getDate()).padStart(2, "0");
+
+    return `${year}-${month}-${day}`;
+}
+
+// Save or remove a completion in IndexedDB
+function updateCompletionInDatabase(habitId, date, completed) {
+    return new Promise((resolve, reject) => {
+        const transaction = db.transaction(
+            COMPLETION_STORE,
+            "readwrite"
+        );
+
+        const store = transaction.objectStore(COMPLETION_STORE);
+
+        // Unique record for each habit and date
+        const completionId = `${habitId}_${date}`;
+
+        if (completed) {
+            store.put({
+                id: completionId,
+                habitId: habitId,
+                date: date
+            });
+        } else {
+            store.delete(completionId);
+        }
+
+        transaction.oncomplete = () => resolve();
+
+        transaction.onerror = () => reject(transaction.error);
+
+        transaction.onabort = () => reject(transaction.error);
+    });
+}
+
+
+/* =========================================
+   IndexedDB - Load Completions
+   ========================================= */
+
+function loadCompletionsFromDatabase() {
+    return new Promise((resolve, reject) => {
+        const transaction = db.transaction(
+            COMPLETION_STORE,
+            "readonly"
+        );
+
+        const store = transaction.objectStore(COMPLETION_STORE);
+
+        // Retrieve all saved completion records
+        const request = store.getAll();
+
+        request.onsuccess = () => {
+            resolve(request.result);
+        };
+
+        request.onerror = () => {
+            reject(request.error);
+        };
+    });
+}
+
 
 /* =========================================
    Application Initialisation
@@ -531,19 +664,23 @@ function loadHabitsFromDatabase() {
 
 async function initialiseApp() {
     try {
-        // Open the IndexedDB database
+        // Open IndexedDB
         await openDatabase();
 
         console.log("HabitFlow database opened successfully!");
 
-        // Load saved habits into our JavaScript array
+        // Load saved habits
         habits = await loadHabitsFromDatabase();
 
-        // Display the loaded habits
+        // Load completion history
+        completions = await loadCompletionsFromDatabase();
+
+        // Update the interface
         renderHabits();
         renderTodayHabits();
 
         console.log(`Loaded ${habits.length} habits from IndexedDB`);
+        console.log(`Loaded ${completions.length} completions from IndexedDB`);
 
     } catch (error) {
         console.error("Failed to initialise HabitFlow:", error);
@@ -551,4 +688,5 @@ async function initialiseApp() {
 }
 
 initialiseApp();
+
 

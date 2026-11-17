@@ -371,3 +371,31 @@ body.dark-mode .nav-button.active {
     border: 1px solid var(--border);
     border-radius: 8px;
 }
+
+
+
+/* Daily habit completion */
+.completion-label {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    width: 100%;
+    cursor: pointer;
+}
+
+.completion-label input[type="checkbox"] {
+    width: 22px;
+    height: 22px;
+    flex-shrink: 0;
+    accent-color: var(--accent);
+}
+
+.completion-label span {
+    flex: 1;
+    overflow-wrap: anywhere;
+}
+
+.completion-label input:checked + span {
+    text-decoration: line-through;
+    color: var(--text-secondary);
+}
