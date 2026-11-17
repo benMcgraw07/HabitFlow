@@ -17,6 +17,10 @@ function showScreen(screenId) {
     // Show the requested screen
     const selectedScreen = document.getElementById(screenId);
     selectedScreen.hidden = false;
+    // Refresh statistics whenever Progress is opened
+    if (screenId === "progress-screen") {
+        renderWeeklyProgress();
+    }
 
     // Update the active navigation button
     navButtons.forEach((button) => {
@@ -131,7 +135,9 @@ habitForm.addEventListener("submit", async (event) => {
         habitToSave = {
             id: crypto.randomUUID(),
             name: habitName,
-            weekdays: selectedDays
+            weekdays: selectedDays,
+            createdOn: getTodayDate()
+            
         };
     } else {
         // Find the habit being edited
@@ -656,6 +662,228 @@ function loadCompletionsFromDatabase() {
         };
     });
 }
+
+
+/* =========================================
+   HabitFlow - Weekly Progress
+   ========================================= */
+
+function getCurrentWeekDates() {
+    const today = new Date();
+
+    // Start at midnight today
+    const monday = new Date(
+        today.getFullYear(),
+        today.getMonth(),
+        today.getDate()
+    );
+
+    // Move backwards to Monday
+    const daysSinceMonday = (today.getDay() + 6) % 7;
+    monday.setDate(monday.getDate() - daysSinceMonday);
+
+    const weekDates = [];
+
+    // Generate Monday through Sunday
+    for (let i = 0; i < 7; i++) {
+        const date = new Date(monday);
+        date.setDate(monday.getDate() + i);
+
+        const year = date.getFullYear();
+        const month = String(date.getMonth() + 1).padStart(2, "0");
+        const day = String(date.getDate()).padStart(2, "0");
+
+        weekDates.push({
+            date: `${year}-${month}-${day}`,
+            weekday: date.getDay(),
+            label: date.toLocaleDateString("en-GB", {
+                weekday: "short"
+            }),
+            isFuture: date > today
+        });
+    }
+
+    return weekDates;
+}
+
+
+/* =========================================
+   HabitFlow - Weekly Statistics
+   ========================================= */
+
+function calculateWeeklyStats() {
+    const weekDates = getCurrentWeekDates();
+    const today = getTodayDate();
+
+    let totalScheduled = 0;
+    let totalCompleted = 0;
+
+    // Look up completed habit/date combinations
+    const completedIds = new Set(
+        completions.map((completion) => completion.id)
+    );
+
+    const dailyStats = weekDates.map((day) => {
+        // Future days do not count towards progress
+        if (day.isFuture) {
+            return {
+                ...day,
+                scheduled: 0,
+                completed: 0
+            };
+        }
+
+        // Find habits scheduled for this day
+        const scheduledHabits = habits.filter((habit) => {
+            const createdOn = habit.createdOn || today;
+
+            return (
+                habit.weekdays.includes(day.weekday) &&
+                day.date >= createdOn
+            );
+        });
+
+        // Count completed habits
+        const completedCount = scheduledHabits.filter((habit) =>
+            completedIds.has(`${habit.id}_${day.date}`)
+        ).length;
+
+        totalScheduled += scheduledHabits.length;
+        totalCompleted += completedCount;
+
+        return {
+            ...day,
+            scheduled: scheduledHabits.length,
+            completed: completedCount
+        };
+    });
+
+    // Avoid division by zero
+    const percentage = totalScheduled > 0
+        ? Math.round((totalCompleted / totalScheduled) * 100)
+        : 0;
+
+    return {
+        totalScheduled,
+        totalCompleted,
+        percentage,
+        dailyStats
+    };
+}
+
+
+/* =========================================
+   HabitFlow - Progress Dashboard
+   ========================================= */
+
+function renderWeeklyProgress() {
+    // Calculate the latest weekly statistics
+    const stats = calculateWeeklyStats();
+
+    const statisticsContainer =
+        document.getElementById("weekly-statistics");
+
+    // Clear the previous statistics
+    statisticsContainer.replaceChildren();
+
+    // Create the weekly overview card
+    const card = document.createElement("div");
+    card.className = "weekly-summary-card";
+
+    const heading = document.createElement("h3");
+    heading.textContent = "Weekly Overview";
+
+    const percentage = document.createElement("p");
+    percentage.className = "weekly-percentage";
+    percentage.textContent =
+        `${stats.percentage}% completion`;
+
+    const summary = document.createElement("p");
+    summary.textContent =
+        `${stats.totalCompleted}/${stats.totalScheduled} scheduled activities completed`;
+
+    // Add everything to the Progress screen
+    card.append(heading, percentage, summary);
+    statisticsContainer.appendChild(card);
+    renderWeeklyChart();
+}
+
+
+/* =========================================
+   HabitFlow - Weekly Progress Chart
+   ========================================= */
+
+function renderWeeklyChart() {
+    const chartContainer = document.getElementById("weekly-chart");
+
+    const stats = calculateWeeklyStats();
+
+    chartContainer.replaceChildren();
+
+    const heading = document.createElement("h3");
+    heading.textContent = "Daily Completion";
+
+    const chart = document.createElement("div");
+    chart.className = "weekly-chart";
+
+    stats.dailyStats.forEach((day) => {
+        const dayColumn = document.createElement("div");
+        dayColumn.className = "chart-day";
+
+        // Calculate percentage for this day
+        const percentage = day.scheduled > 0
+            ? (day.completed / day.scheduled) * 100
+            : 0;
+
+        // Create the vertical bar container
+        const barContainer = document.createElement("div");
+        barContainer.className = "chart-column";
+
+        if (day.isFuture) {
+            barContainer.classList.add("future");
+        }
+
+        const bar = document.createElement("div");
+        bar.className = "chart-bar";
+        bar.style.height = `${percentage}%`;
+        bar.setAttribute("aria-hidden", "true");
+
+        // Describe the bar for screen readers
+        const description = day.isFuture
+            ? "Upcoming"
+            : day.scheduled === 0
+                ? "No habits scheduled"
+                : `${day.completed} of ${day.scheduled} completed`;
+
+        barContainer.setAttribute("role", "img");
+        barContainer.setAttribute(
+            "aria-label",
+            `${day.label}: ${description}`
+        );
+
+        barContainer.appendChild(bar);
+
+        // Weekday label
+        const dayLabel = document.createElement("span");
+        dayLabel.className = "chart-label";
+        dayLabel.textContent = day.label;
+
+        // Completed / scheduled label
+        const countLabel = document.createElement("small");
+        countLabel.className = "chart-count";
+
+        countLabel.textContent = day.isFuture || day.scheduled === 0
+            ? "—"
+            : `${day.completed}/${day.scheduled}`;
+
+        dayColumn.append(barContainer, dayLabel, countLabel);
+        chart.appendChild(dayColumn);
+    });
+
+    chartContainer.append(heading, chart);
+}
+
+
 
 
 /* =========================================

@@ -399,3 +399,101 @@ body.dark-mode .nav-button.active {
     text-decoration: line-through;
     color: var(--text-secondary);
 }
+
+
+
+/* =========================================
+   Weekly Progress Dashboard
+   ========================================= */
+
+.weekly-summary-card {
+    padding: 20px;
+    background: var(--card-background);
+    border-radius: 12px;
+    margin-bottom: 20px;
+}
+
+.weekly-summary-card h3 {
+    margin: 0 0 16px;
+    color: var(--text-primary);
+}
+
+.weekly-percentage {
+    font-size: 32px;
+    font-weight: bold;
+    color: var(--accent);
+    margin: 0 0 8px;
+}
+
+.weekly-summary-card p:last-child {
+    margin-bottom: 0;
+    color: var(--text-secondary);
+    font-size: 14px;
+}
+
+
+
+/* =========================================
+   Weekly Progress Chart
+   ========================================= */
+
+#weekly-chart {
+    margin-top: 24px;
+}
+
+#weekly-chart h3 {
+    margin-bottom: 16px;
+    color: var(--text-primary);
+}
+
+.weekly-chart {
+    display: grid;
+    grid-template-columns: repeat(7, minmax(0, 1fr));
+    gap: 8px;
+}
+
+.chart-day {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    min-width: 0;
+}
+
+.chart-column {
+    display: flex;
+    align-items: flex-end;
+    width: 100%;
+    height: 140px;
+    background: var(--card-background);
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+.chart-bar {
+    width: 100%;
+    background: var(--accent);
+    border-radius: 8px 8px 0 0;
+    transition: height 0.3s ease;
+}
+
+.chart-column.future {
+    background: transparent;
+    border: 1px dashed var(--border);
+}
+
+.chart-label {
+    font-size: 12px;
+    font-weight: bold;
+}
+
+.chart-count {
+    font-size: 11px;
+    color: var(--text-secondary);
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .chart-bar {
+        transition: none;
+    }
+}
