@@ -120,14 +120,32 @@ habitForm.addEventListener("submit", (event) => {
         return;
     }
 
-    // Create a new habit object
-    const newHabit = {
-        id: crypto.randomUUID(),
-        name: habitName,
-        weekdays: selectedDays
-    };
+    // Create a new habit object or edit habit object
 
-    habits.push(newHabit);
+    if (editingHabitId === null) {
+        // ADD: Create a new habit
+        const newHabit = {
+            id: crypto.randomUUID(),
+            name: habitName,
+            weekdays: selectedDays
+        };
+
+        habits.push(newHabit);
+    } else {
+        // EDIT: Update the existing habit
+        const habit = habits.find(
+            (habit) => habit.id === editingHabitId
+        );
+
+        if (habit) {
+            habit.name = habitName;
+            habit.weekdays = selectedDays;
+        }
+    }
+
+    // Clear editing mode
+    editingHabitId = null;
+
 
     // Update the screen
     renderHabits();
@@ -151,6 +169,7 @@ function formatWeekdays(days) {
 }
 
 // Display all saved habits
+
 function renderHabits() {
     habitsList.replaceChildren();
 
@@ -165,6 +184,7 @@ function renderHabits() {
         const card = document.createElement("div");
         card.className = "habit-card";
 
+        // Habit information
         const details = document.createElement("div");
 
         const name = document.createElement("strong");
@@ -175,10 +195,99 @@ function renderHabits() {
         schedule.className = "habit-schedule";
 
         details.append(name, schedule);
-        card.appendChild(details);
+
+        // Edit and Delete buttons
+        const actions = document.createElement("div");
+        actions.className = "habit-actions";
+
+        const editButton = document.createElement("button");
+        editButton.type = "button";
+        editButton.textContent = "Edit";
+        editButton.addEventListener("click", () => {
+            editHabit(habit.id);
+        });
+
+        const deleteButton = document.createElement("button");
+        deleteButton.type = "button";
+        deleteButton.textContent = "Delete";
+        deleteButton.addEventListener("click", () => {
+            deleteHabit(habit.id);
+        });
+
+        actions.append(editButton, deleteButton);
+        card.append(details, actions);
+
         habitsList.appendChild(card);
     });
 }
 
+
 // Display the empty state when the app first loads
 renderHabits();
+
+
+
+// Edit an existing habit
+function editHabit(habitId) {
+    const habit = habits.find(
+        (habit) => habit.id === habitId
+    );
+
+    if (!habit) return;
+
+    editingHabitId = habitId;
+
+    // Fill the form with existing values
+    habitForm.reset();
+    habitNameInput.value = habit.name;
+
+    habitForm.querySelectorAll('input[name="weekdays"]')
+        .forEach((checkbox) => {
+            checkbox.checked = habit.weekdays.includes(
+                Number(checkbox.value)
+            );
+        });
+
+    // Update the form heading and button
+    document.getElementById("form-title").textContent =
+        "Edit Habit";
+
+    document.getElementById("save-habit-button").textContent =
+        "Save Changes";
+
+    formError.hidden = true;
+    habitForm.hidden = false;
+    addHabitButton.hidden = true;
+
+    habitNameInput.focus();
+}
+
+// Delete an existing habit
+function deleteHabit(habitId) {
+    const habit = habits.find(
+        (habit) => habit.id === habitId
+    );
+
+    if (!habit) return;
+
+    // Ask for confirmation before deleting
+    const confirmed = confirm(
+        `Are you sure you want to delete "${habit.name}"?`
+    );
+
+    if (!confirmed) return;
+
+    habits = habits.filter(
+        (habit) => habit.id !== habitId
+    );
+
+    // Close the form if this habit was being edited
+    if (editingHabitId === habitId) {
+        editingHabitId = null;
+        habitForm.reset();
+        habitForm.hidden = true;
+        addHabitButton.hidden = false;
+    }
+
+    renderHabits();
+}

@@ -339,3 +339,35 @@ body.dark-mode .nav-button.active {
     background: var(--card-background);
     color: var(--text-primary);
 }
+
+
+
+
+/* Habit card actions */
+.habit-card > div:first-child {
+    min-width: 0;
+    overflow-wrap: anywhere;
+}
+
+.habit-schedule {
+    margin: 6px 0 0;
+    color: var(--text-secondary);
+    font-size: 13px;
+}
+
+.habit-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    flex-shrink: 0;
+}
+
+.habit-actions button {
+    min-width: 65px;
+    min-height: 40px;
+    padding: 8px;
+    background: var(--surface);
+    color: var(--text-primary);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+}
