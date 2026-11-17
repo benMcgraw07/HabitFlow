@@ -59,6 +59,7 @@ showScreen("today-screen");
 
 // Temporary habit storage (IndexedDB comes later)
 let habits = [];
+let editingHabitId = null;
 
 // Find the form elements
 const addHabitButton = document.getElementById("add-habit-button");
@@ -69,21 +70,37 @@ const cancelHabitButton = document.getElementById("cancel-habit-button");
 const formError = document.getElementById("habit-form-error");
 
 // Open the Add New Habit form
+
 addHabitButton.addEventListener("click", () => {
+    editingHabitId = null;
+
     habitForm.reset();
     formError.hidden = true;
+
+    document.getElementById("form-title").textContent =
+        "Add New Habit";
+
+    document.getElementById("save-habit-button").textContent =
+        "Save Habit";
+
     habitForm.hidden = false;
     addHabitButton.hidden = true;
+
     habitNameInput.focus();
 });
 
+
 // Close the form without saving
+
 cancelHabitButton.addEventListener("click", () => {
+    editingHabitId = null;
+
     habitForm.reset();
     formError.hidden = true;
     habitForm.hidden = true;
     addHabitButton.hidden = false;
 });
+
 
 // Handle form submission
 habitForm.addEventListener("submit", (event) => {
