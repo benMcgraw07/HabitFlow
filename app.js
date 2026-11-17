@@ -291,3 +291,62 @@ function deleteHabit(habitId) {
 
     renderHabits();
 }
+
+
+
+/* =========================================
+   IndexedDB - Local Database
+   ========================================= */
+
+const DB_NAME = "HabitFlowDB";
+const DB_VERSION = 1;
+const HABIT_STORE = "habits";
+
+let db = null;
+
+// Open or create the database
+function openDatabase() {
+    return new Promise((resolve, reject) => {
+        const request = indexedDB.open(DB_NAME, DB_VERSION);
+
+        // Runs when the database is first created
+        request.onupgradeneeded = (event) => {
+            const database = event.target.result;
+
+            if (!database.objectStoreNames.contains(HABIT_STORE)) {
+                database.createObjectStore(HABIT_STORE, {
+                    keyPath: "id"
+                });
+            }
+        };
+
+        // Database opened successfully
+        request.onsuccess = () => {
+            db = request.result;
+            resolve(db);
+        };
+
+        // Something went wrong
+        request.onerror = () => {
+            reject(request.error);
+        };
+    });
+}
+
+
+
+/* =========================================
+   Application Initialisation
+   ========================================= */
+
+async function initialiseApp() {
+    try {
+        await openDatabase();
+
+        console.log("HabitFlow database opened successfully!");
+    } catch (error) {
+        console.error("Failed to open HabitFlow database:", error);
+    }
+}
+
+initialiseApp();
