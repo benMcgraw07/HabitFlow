@@ -10,6 +10,50 @@
     <link rel="stylesheet" href="style.css">
     <link rel="manifest" href="manifest.json">
     <script src="app.js" defer></script>
+    
+
+<!-- OneSignal Web Push SDK -->
+<script
+    src="https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js"
+    defer
+></script>
+
+<script>
+    // Only initialize push notifications on the deployed website
+    if (window.location.hostname === "benmcgraw07.github.io") {
+
+        window.OneSignalDeferred =
+            window.OneSignalDeferred || [];
+
+        OneSignalDeferred.push(async function (OneSignal) {
+            try {
+                await OneSignal.init({
+                    appId: "105a3752-a2db-4cfd-8c0b-453a3472dfd8",
+
+                    serviceWorkerPath:
+                        "/HabitFlow/onesignal/OneSignalSDKWorker.js",
+
+                    serviceWorkerParam: {
+                        scope: "/HabitFlow/onesignal/"
+                    },
+
+                    notifyButton: {
+                        enable: false
+                    }
+                });
+
+                console.log("HabitFlow OneSignal initialized");
+
+            } catch (error) {
+                console.error(
+                    "OneSignal initialization failed:",
+                    error
+                );
+            }
+        });
+    }
+</script>
+
 </head>
 
 <body>
