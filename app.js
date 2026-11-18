@@ -941,3 +941,132 @@ async function initialiseApp() {
 initialiseApp();
 
 
+
+/* =========================================
+   HabitFlow - Settings: Dark Mode
+   ========================================= */
+
+const darkModeToggle = document.getElementById("dark-mode-toggle");
+
+// Restore the user's saved preference
+const savedTheme = localStorage.getItem("habitflow-theme");
+
+if (savedTheme === "dark") {
+    document.body.classList.add("dark-mode");
+    darkModeToggle.checked = true;
+}
+
+// Listen for changes to the checkbox
+darkModeToggle.addEventListener("change", () => {
+    const darkModeEnabled = darkModeToggle.checked;
+
+    // Apply or remove the dark theme
+    document.body.classList.toggle("dark-mode", darkModeEnabled);
+
+    // Remember the preference after refreshing
+    localStorage.setItem(
+        "habitflow-theme",
+        darkModeEnabled ? "dark" : "light"
+    );
+});
+
+
+/* =========================================
+   HabitFlow - Settings: Export Data
+   ========================================= */
+
+const exportDataButton = document.getElementById("export-data-button");
+
+exportDataButton.addEventListener("click", async () => {
+    try {
+        // Read the latest saved records from IndexedDB
+        const savedHabits = await loadHabitsFromDatabase();
+        const savedCompletions = await loadCompletionsFromDatabase();
+
+        // Organise the data for export
+        const backup = {
+            app: "HabitFlow",
+            exportedAt: new Date().toISOString(),
+            habits: savedHabits,
+            completions: savedCompletions
+        };
+
+        // Convert the data to formatted JSON
+        const json = JSON.stringify(backup, null, 2);
+
+        // Create a downloadable file
+        const blob = new Blob([json], {
+            type: "application/json"
+        });
+
+        const url = URL.createObjectURL(blob);
+
+        // Trigger the download
+        const link = document.createElement("a");
+        link.href = url;
+        link.download = `habitflow-backup-${getTodayDate()}.json`;
+
+        document.body.appendChild(link);
+        link.click();
+        link.remove();
+
+        // Release the temporary file URL
+        setTimeout(() => URL.revokeObjectURL(url), 1000);
+
+    } catch (error) {
+        console.error("Failed to export habit data:", error);
+        alert("Unable to export habit data. Please try again.");
+    }
+});
+
+
+/* =========================================
+   HabitFlow - Settings: Reset Progress
+   ========================================= */
+
+const resetProgressButton = document.getElementById("reset-progress-button");
+
+resetProgressButton.addEventListener("click", async () => {
+    // Confirm before deleting completion history
+    const confirmed = confirm(
+        "Reset all progress? This will permanently delete all completion history, but keep your habits."
+    );
+
+    if (!confirmed) return;
+
+    resetProgressButton.disabled = true;
+
+    try {
+        // Delete all completion records from IndexedDB
+        await new Promise((resolve, reject) => {
+            const transaction = db.transaction(
+                COMPLETION_STORE,
+                "readwrite"
+            );
+
+            const store = transaction.objectStore(COMPLETION_STORE);
+
+            store.clear();
+
+            transaction.oncomplete = () => resolve();
+            transaction.onerror = () => reject(transaction.error);
+            transaction.onabort = () => reject(transaction.error);
+        });
+
+        // Clear the completion records held in memory
+        completions = [];
+
+        // Refresh the screens
+        renderTodayHabits();
+        renderWeeklyProgress();
+
+        alert("All progress has been reset successfully.");
+
+    } catch (error) {
+        console.error("Failed to reset progress:", error);
+        alert("Unable to reset progress. Please try again.");
+
+    } finally {
+        resetProgressButton.disabled = false;
+    }
+});
