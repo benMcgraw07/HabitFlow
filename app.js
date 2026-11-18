@@ -130,15 +130,26 @@ habitForm.addEventListener("submit", async (event) => {
 
     let habitToSave;
 
+    
     if (editingHabitId === null) {
         // Create a new habit
+        const today = getTodayDate();
+
         habitToSave = {
             id: crypto.randomUUID(),
             name: habitName,
             weekdays: selectedDays,
-            createdOn: getTodayDate()
-            
+            createdOn: today,
+
+            // Record the original schedule
+            scheduleHistory: [
+                {
+                    effectiveFrom: today,
+                    weekdays: [...selectedDays]
+                }
+            ]
         };
+ 
     } else {
         // Find the habit being edited
         const existingHabit = habits.find(
@@ -151,13 +162,50 @@ habitForm.addEventListener("submit", async (event) => {
             return;
         }
 
-        // Preserve the existing ID
+        const today = getTodayDate();
+
+        // Detect whether the scheduled weekdays changed
+        const previousDays = [...existingHabit.weekdays].sort();
+        const updatedDays = [...selectedDays].sort();
+
+        const scheduleChanged =
+            JSON.stringify(previousDays) !==
+            JSON.stringify(updatedDays);
+
+        // Preserve any existing schedule history
+        let scheduleHistory = existingHabit.scheduleHistory
+            ? [...existingHabit.scheduleHistory]
+            : [{
+                effectiveFrom: existingHabit.createdOn || today,
+                weekdays: [...existingHabit.weekdays]
+            }];
+
+        if (scheduleChanged) {
+            const todayEntry = scheduleHistory.find(
+                (entry) => entry.effectiveFrom === today
+            );
+
+            if (todayEntry) {
+                // Replace an earlier change made today
+                todayEntry.weekdays = [...selectedDays];
+            } else {
+                // Record the new schedule from today onwards
+                scheduleHistory.push({
+                    effectiveFrom: today,
+                    weekdays: [...selectedDays]
+                });
+            }
+        }
+
+        // Preserve the ID, creation date and schedule history
         habitToSave = {
             ...existingHabit,
             name: habitName,
-            weekdays: selectedDays
+            weekdays: selectedDays,
+            scheduleHistory: scheduleHistory
         };
     }
+
 
     // Save to IndexedDB
     try {
@@ -706,7 +754,7 @@ function loadCompletionsFromDatabase() {
    HabitFlow - Weekly Progress
    ========================================= */
 
-function getCurrentWeekDates() {
+function getCurrentWeekDates(weekOffset = 0) {
     const today = new Date();
 
     // Start at midnight today
@@ -718,7 +766,10 @@ function getCurrentWeekDates() {
 
     // Move backwards to Monday
     const daysSinceMonday = (today.getDay() + 6) % 7;
-    monday.setDate(monday.getDate() - daysSinceMonday);
+    monday.setDate(
+        monday.getDate() - daysSinceMonday + (weekOffset * 7)
+    );
+
 
     const weekDates = [];
 
@@ -745,12 +796,46 @@ function getCurrentWeekDates() {
 }
 
 
+
+/* =========================================
+   HabitFlow - Historical Habit Schedules
+   ========================================= */
+
+function getWeekdaysForDate(habit, date) {
+
+    // Support older habits without schedule history
+    if (
+        !Array.isArray(habit.scheduleHistory) ||
+        habit.scheduleHistory.length === 0
+    ) {
+        return habit.weekdays;
+    }
+
+    // Find schedules that were active on or before this date
+    const applicableSchedules = habit.scheduleHistory
+        .filter((entry) => entry.effectiveFrom <= date)
+        .sort((a, b) =>
+            b.effectiveFrom.localeCompare(a.effectiveFrom)
+        );
+
+    // No schedule existed yet for this date
+    if (applicableSchedules.length === 0) {
+        return [];
+    }
+
+    // Return the most recent applicable schedule
+    return applicableSchedules[0].weekdays;
+}
+
+
 /* =========================================
    HabitFlow - Weekly Statistics
    ========================================= */
 
-function calculateWeeklyStats() {
-    const weekDates = getCurrentWeekDates();
+
+function calculateWeeklyStats(weekOffset = 0) {
+    const weekDates = getCurrentWeekDates(weekOffset);
+
     const today = getTodayDate();
 
     let totalScheduled = 0;
@@ -771,15 +856,22 @@ function calculateWeeklyStats() {
             };
         }
 
-        // Find habits scheduled for this day
+        // Find habits scheduled for this historical date
         const scheduledHabits = habits.filter((habit) => {
             const createdOn = habit.createdOn || today;
 
+            // Use the schedule that applied on this date
+            const weekdaysForDate = getWeekdaysForDate(
+                habit,
+                day.date
+            );
+
             return (
-                habit.weekdays.includes(day.weekday) &&
+                weekdaysForDate.includes(day.weekday) &&
                 day.date >= createdOn
             );
         });
+
 
         // Count completed habits
         const completedCount = scheduledHabits.filter((habit) =>
@@ -811,12 +903,84 @@ function calculateWeeklyStats() {
 
 
 /* =========================================
+   v1.0 - Weekly History Navigation
+   ========================================= */
+
+// 0 = current week, -1 = previous week, etc.
+let selectedWeekOffset = 0;
+
+const previousWeekButton =
+    document.getElementById("previous-week-button");
+
+const nextWeekButton =
+    document.getElementById("next-week-button");
+
+const selectedWeekLabel =
+    document.getElementById("selected-week-label");
+
+// Update the displayed week and arrow states
+function updateWeekNavigation() {
+    const dates = getCurrentWeekDates(selectedWeekOffset);
+
+    const start = new Date(`${dates[0].date}T12:00:00`);
+    const end = new Date(`${dates[6].date}T12:00:00`);
+
+    const shortFormat = {
+        day: "numeric",
+        month: "short"
+    };
+
+    const fullFormat = {
+        day: "numeric",
+        month: "short",
+        year: "numeric"
+    };
+
+    const startFormat =
+        start.getFullYear() === end.getFullYear()
+            ? shortFormat
+            : fullFormat;
+
+    selectedWeekLabel.textContent =
+        `${start.toLocaleDateString("en-GB", startFormat)} – ` +
+        `${end.toLocaleDateString("en-GB", fullFormat)}`;
+
+    // Previous weeks can be viewed
+    previousWeekButton.disabled = false;
+
+    // Future weeks cannot be viewed
+    nextWeekButton.disabled = selectedWeekOffset === 0;
+}
+
+// Move backward one week
+previousWeekButton.addEventListener("click", () => {
+    selectedWeekOffset--;
+    renderWeeklyProgress();
+});
+
+// Move forward one week, stopping at the present
+nextWeekButton.addEventListener("click", () => {
+    if (selectedWeekOffset >= 0) {
+        return;
+    }
+
+    selectedWeekOffset++;
+    renderWeeklyProgress();
+});
+
+
+/* =========================================
    HabitFlow - Progress Dashboard
    ========================================= */
 
+
 function renderWeeklyProgress() {
-    // Calculate the latest weekly statistics
-    const stats = calculateWeeklyStats();
+    // Update the date range and navigation buttons
+    updateWeekNavigation();
+
+    // Calculate statistics for the selected week
+    const stats = calculateWeeklyStats(selectedWeekOffset);
+
 
     const statisticsContainer =
         document.getElementById("weekly-statistics");
@@ -854,7 +1018,8 @@ function renderWeeklyProgress() {
 function renderWeeklyChart() {
     const chartContainer = document.getElementById("weekly-chart");
 
-    const stats = calculateWeeklyStats();
+    const stats = calculateWeeklyStats(selectedWeekOffset);
+
 
     chartContainer.replaceChildren();
 

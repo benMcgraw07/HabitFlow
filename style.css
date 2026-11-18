@@ -978,3 +978,47 @@ body.dark-mode #reset-progress-button {
         transition: none;
     }
 }
+
+
+
+
+/* =========================================
+   v1.0 - Weekly History Navigation
+   ========================================= */
+
+#progress-screen .week-navigation {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    margin-bottom: 24px;
+}
+
+#progress-screen .week-navigation button {
+    width: 44px;
+    height: 44px;
+    flex-shrink: 0;
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    background: var(--surface);
+    color: var(--text-primary);
+    font-size: 22px;
+    cursor: pointer;
+}
+
+#progress-screen .week-navigation button:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+}
+
+#progress-screen .week-navigation button:focus-visible {
+    outline: 3px solid var(--accent);
+    outline-offset: 2px;
+}
+
+#progress-screen #selected-week-label {
+    text-align: center;
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text-primary);
+}

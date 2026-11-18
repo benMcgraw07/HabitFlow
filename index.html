@@ -99,9 +99,39 @@
             <section id="progress-screen" class="screen" hidden>
                 <h2>Progress</h2>
 
+                <!-- Weekly history navigation -->
+                <div class="week-navigation"
+                    role="group"
+                    aria-label="Weekly history navigation">
+
+                    <button
+                        type="button"
+                        id="previous-week-button"
+                        aria-label="View previous week"
+                        disabled
+                    >
+                        &larr;
+                    </button>
+
+                    <span id="selected-week-label" aria-live="polite">
+                        This week
+                    </span>
+
+                    <button
+                        type="button"
+                        id="next-week-button"
+                        aria-label="View next week"
+                        disabled
+                    >
+                        &rarr;
+                    </button>
+
+                </div>
+
                 <div id="weekly-statistics"></div>
                 <div id="weekly-chart"></div>
             </section>
+
 
             <!-- Settings Screen -->
             <section id="settings-screen" class="screen" hidden>
