@@ -1086,3 +1086,28 @@ resetProgressButton.addEventListener("click", async () => {
     }
 });
 //V0.6
+
+
+/* =========================================
+   HabitFlow - Service Worker Registration
+   ========================================= */
+
+if ("serviceWorker" in navigator) {
+    window.addEventListener("load", async () => {
+        try {
+            const registration = await navigator.serviceWorker.register(
+                "./service-worker.js"
+            );
+
+            console.log(
+                "HabitFlow service worker registered:",
+                registration.scope
+            );
+        } catch (error) {
+            console.error(
+                "Service worker registration failed:",
+                error
+            );
+        }
+    });
+}
