@@ -399,6 +399,7 @@ function editHabit(habitId) {
 
 // Delete an existing habit
 
+
 async function deleteHabit(habitId) {
     const habit = habits.find(
         (habit) => habit.id === habitId
@@ -406,6 +407,7 @@ async function deleteHabit(habitId) {
 
     if (!habit) return;
 
+    // Ask the user to confirm deletion
     const confirmed = confirm(
         `Are you sure you want to delete "${habit.name}"?`
     );
@@ -413,15 +415,20 @@ async function deleteHabit(habitId) {
     if (!confirmed) return;
 
     try {
-        // First, delete from IndexedDB
+        // Delete the habit and its completions from IndexedDB
         await deleteHabitFromDatabase(habitId);
 
-        // Then update the application's array
+        // Remove the habit from memory
         habits = habits.filter(
             (habit) => habit.id !== habitId
         );
 
-        // Close the form if necessary
+        // Remove its completion records from memory
+        completions = completions.filter(
+            (completion) => completion.habitId !== habitId
+        );
+
+        // Close the form if this habit was being edited
         if (editingHabitId === habitId) {
             editingHabitId = null;
             habitForm.reset();
@@ -429,15 +436,17 @@ async function deleteHabit(habitId) {
             addHabitButton.hidden = false;
         }
 
-        // Update the screen
+        // Refresh all affected screens
         renderHabits();
         renderTodayHabits();
+        renderWeeklyProgress();
 
     } catch (error) {
         console.error("Failed to delete habit:", error);
         alert("Unable to delete habit. Please try again.");
     }
 }
+
 
 
 
@@ -535,31 +544,45 @@ function saveHabitToDatabase(habit) {
    IndexedDB - Delete Habit
    ========================================= */
 
+
 function deleteHabitFromDatabase(habitId) {
     return new Promise((resolve, reject) => {
+        // Access both stores in one transaction
         const transaction = db.transaction(
-            HABIT_STORE,
+            [HABIT_STORE, COMPLETION_STORE],
             "readwrite"
         );
 
-        const store = transaction.objectStore(HABIT_STORE);
+        const habitStore = transaction.objectStore(HABIT_STORE);
+        const completionStore = transaction.objectStore(COMPLETION_STORE);
 
-        // Delete the habit using its unique ID
-        store.delete(habitId);
+        // Delete the habit
+        habitStore.delete(habitId);
 
-        transaction.oncomplete = () => {
-            resolve();
+        // Delete all associated completion records
+        const request = completionStore.openCursor();
+
+        request.onsuccess = () => {
+            const cursor = request.result;
+
+            if (cursor) {
+                if (cursor.value.habitId === habitId) {
+                    cursor.delete();
+                }
+                cursor.continue();
+            }
         };
 
-        transaction.onerror = () => {
-            reject(transaction.error);
-        };
+        transaction.oncomplete = () => resolve();
 
-        transaction.onabort = () => {
-            reject(transaction.error);
-        };
+        transaction.onerror = () => reject(transaction.error);
+
+        transaction.onabort = () => reject(
+            transaction.error || new Error("Delete transaction aborted")
+        );
     });
 }
+
 
 
 
