@@ -228,9 +228,24 @@ function renderHabits() {
         const name = document.createElement("strong");
         name.textContent = habit.name;
 
-        const schedule = document.createElement("p");
-        schedule.textContent = formatWeekdays(habit.weekdays);
+        
+        const schedule = document.createElement("div");
         schedule.className = "habit-schedule";
+
+        // Display scheduled days in Monday-Sunday order
+        const dayNames = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+
+        habit.weekdays
+            .slice()
+            .sort((a, b) => (a + 6) % 7 - (b + 6) % 7)
+            .forEach((day) => {
+                const badge = document.createElement("span");
+                badge.className = "weekday-badge";
+                badge.textContent = dayNames[day];
+
+                schedule.appendChild(badge);
+            });
+
 
         details.append(name, schedule);
 
@@ -1070,3 +1085,4 @@ resetProgressButton.addEventListener("click", async () => {
         resetProgressButton.disabled = false;
     }
 });
+//V0.6

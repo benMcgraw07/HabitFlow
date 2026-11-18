@@ -21,15 +21,27 @@
 
         <main>
             <!-- Today Screen -->
+            
             <section id="today-screen" class="screen">
-                <h2>Today's Habits</h2>
+                <div class="today-header">
+                    <p class="section-eyebrow">YOUR DAILY ROUTINE</p>
+                    <h2>Today's Habits</h2>
+                    <p class="section-description">
+                        Small steps make a big difference.
+                    </p>
+                </div>
 
-                <div id="today-habits"></div>
 
+                
+                <!-- Daily progress summary -->
                 <div class="daily-progress">
                     <p>Daily Progress: <span id="progress-count">0/0</span></p>
                     <progress id="daily-progress-bar" value="0" max="1"></progress>
                 </div>
+
+                <!-- Today's scheduled habits -->
+                <div id="today-habits"></div>
+
             </section>
 
             <!-- My Habits Screen -->
@@ -107,7 +119,7 @@
                 <button id="reset-progress-button" type="button">
                     Reset All Progress
                 </button>
-
+<!--
                 <h3>Notifications</h3>
                 <label>
                     <input type="checkbox" id="reminders-toggle">
@@ -115,9 +127,10 @@
                 </label>
 
                 <label for="reminder-time">Reminder Time</label>
-                <input type="time" id="reminder-time" value="09:00">
+                <input type="time" id="reminder-time" value="09:00">-->
             </section>
         </main>
+
 
         <nav class="bottom-nav" aria-label="Main navigation">
             <button type="button" class="nav-button active"

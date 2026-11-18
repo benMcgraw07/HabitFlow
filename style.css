@@ -497,3 +497,484 @@ body.dark-mode .nav-button.active {
         transition: none;
     }
 }
+
+
+
+/* =========================================
+   v0.7 - Today Screen Redesign
+   ========================================= */
+
+/* Welcome section */
+.today-header {
+    margin: 8px 0 30px;
+}
+
+.section-eyebrow {
+    margin: 0 0 8px;
+    color: var(--accent);
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 1.8px;
+}
+
+.today-header h2 {
+    margin: 0 0 8px;
+    font-size: 28px;
+    font-weight: 750;
+    letter-spacing: -0.8px;
+}
+
+.section-description {
+    margin: 0;
+    color: var(--text-secondary);
+    font-size: 14px;
+}
+
+/* Today's habit cards */
+#today-habits .habit-card {
+    min-height: 76px;
+    padding: 18px;
+    margin-bottom: 12px;
+    background: var(--card-background);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    transition: border-color 0.2s ease;
+}
+
+#today-habits .habit-card:focus-within {
+    border-color: var(--accent);
+}
+
+#today-habits .completion-label {
+    gap: 16px;
+    font-size: 15px;
+    font-weight: 600;
+}
+
+#today-habits .completion-label input {
+    width: 24px;
+    height: 24px;
+}
+
+/* Daily progress area */
+#today-screen .daily-progress {
+    margin-top: 30px;
+    padding: 20px;
+    background: var(--card-background);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+}
+
+#today-screen .daily-progress p {
+    margin: 0 0 14px;
+    font-size: 14px;
+}
+
+#today-screen #daily-progress-bar {
+    height: 12px;
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    #today-habits .habit-card {
+        transition: none;
+    }
+}
+
+
+
+/* =========================================
+   v0.7 - Custom Progress Bar
+   ========================================= */
+
+#daily-progress-bar {
+    appearance: none;
+    -webkit-appearance: none;
+    width: 100%;
+    height: 12px;
+    border: none;
+    border-radius: 10px;
+    overflow: hidden;
+    background: var(--border);
+}
+
+/* Chrome, Edge and Safari */
+#daily-progress-bar::-webkit-progress-bar {
+    background: var(--border);
+    border-radius: 10px;
+}
+
+#daily-progress-bar::-webkit-progress-value {
+    background: var(--accent);
+    border-radius: 10px;
+}
+
+/* Firefox */
+#daily-progress-bar::-moz-progress-bar {
+    background: var(--accent);
+    border-radius: 10px;
+}
+
+
+/* Space between daily progress and habit list */
+#today-screen .daily-progress {
+    margin-bottom: 24px;
+}
+
+
+/* =========================================
+   v0.7 - My Habits Screen Redesign
+   ========================================= */
+
+/* Habit cards */
+#habits-list .habit-card {
+    padding: 20px;
+    margin-bottom: 14px;
+    background: var(--card-background);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    gap: 16px;
+}
+
+/* Habit name */
+#habits-list .habit-card strong {
+    display: block;
+    font-size: 16px;
+    font-weight: 700;
+    line-height: 1.4;
+}
+
+/* Scheduled weekdays */
+#habits-list .habit-schedule {
+    margin-top: 8px;
+    color: var(--text-secondary);
+    font-size: 13px;
+}
+
+/* Edit and Delete button layout */
+#habits-list .habit-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+/* Action buttons */
+#habits-list .habit-actions button {
+    min-width: 76px;
+    min-height: 44px;
+    padding: 10px 12px;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    font-size: 13px;
+    font-weight: 600;
+    background: var(--surface);
+    color: var(--text-primary);
+}
+
+/* Edit button */
+#habits-list .habit-actions button:first-child {
+    color: var(--accent);
+}
+
+/* Delete button */
+#habits-list .habit-actions button:last-child {
+    color: #dc2626;
+}
+
+body.dark-mode #habits-list .habit-actions button:last-child {
+    color: #fca5a5;
+}
+
+/* Interaction feedback */
+#habits-list .habit-actions button:hover {
+    border-color: var(--accent);
+}
+
+#habits-list .habit-actions button:active {
+    transform: scale(0.97);
+}
+
+
+
+/* v0.7 - Scheduled weekday badges */
+
+#habits-list .habit-schedule {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-top: 12px;
+}
+
+.weekday-badge {
+    display: inline-block;
+    padding: 5px 9px;
+    border-radius: 7px;
+    background: rgba(59, 130, 246, 0.12);
+    color: #1d4ed8;
+    font-size: 12px;
+    font-weight: 600;
+}
+
+body.dark-mode .weekday-badge {
+    background: rgba(96, 165, 250, 0.18);
+    color: #93c5fd;
+}
+
+
+
+
+/* =========================================
+   v0.7 - Improved Weekday Selection
+   ========================================= */
+
+.weekday-options label {
+    min-height: 78px;
+    border: 1px solid var(--border);
+    transition: background-color 0.2s ease,
+                border-color 0.2s ease;
+}
+
+/* Highlight selected weekdays */
+.weekday-options label:has(input:checked) {
+    background: rgba(59, 130, 246, 0.12);
+    border-color: var(--accent);
+    color: var(--text-primary);
+    font-weight: 600;
+}
+
+/* Keyboard accessibility */
+.weekday-options label:has(input:focus-visible) {
+    outline: 3px solid var(--accent);
+    outline-offset: 2px;
+}
+
+/* Keep the selection clear in dark mode */
+body.dark-mode .weekday-options label:has(input:checked) {
+    background: rgba(96, 165, 250, 0.18);
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .weekday-options label {
+        transition: none;
+    }
+}
+
+
+
+/* =========================================
+   v0.7 - Progress Dashboard Redesign
+   ========================================= */
+
+/* Weekly overview hero card */
+#progress-screen .weekly-summary-card {
+    background: linear-gradient(
+        135deg,
+        #1d4ed8 0%,
+        #3b82f6 100%
+    );
+    border-radius: 20px;
+    padding: 26px;
+    margin-bottom: 30px;
+    box-shadow: 0 8px 24px rgba(59, 130, 246, 0.15);
+}
+
+/* Card heading */
+#progress-screen .weekly-summary-card h3 {
+    margin: 0 0 22px;
+    color: #ffffff;
+    font-size: 16px;
+    font-weight: 600;
+}
+
+/* Main completion percentage */
+#progress-screen .weekly-percentage {
+    margin: 0 0 12px;
+    color: #ffffff;
+    font-size: clamp(26px, 7vw, 36px);
+    font-weight: 800;
+    line-height: 1.2;
+    letter-spacing: -0.8px;
+}
+
+/* Completed activities description */
+#progress-screen .weekly-summary-card p:last-child {
+    margin: 0;
+    color: #eff6ff;
+    font-size: 14px;
+    font-weight: 500;
+}
+
+/* Screen heading */
+#progress-screen > h2 {
+    margin-bottom: 30px;
+    font-size: 28px;
+    letter-spacing: -0.8px;
+}
+
+
+
+/* =========================================
+   v0.7 - Weekly Chart Redesign
+   ========================================= */
+
+/* Chart container */
+#progress-screen #weekly-chart {
+    margin-top: 24px;
+    padding: 20px 16px 24px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 18px;
+}
+
+/* Chart heading */
+#progress-screen #weekly-chart h3 {
+    margin: 0 0 22px;
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--text-primary);
+}
+
+/* Spacing between weekdays */
+#progress-screen .weekly-chart {
+    gap: 8px;
+}
+
+/* Individual chart columns */
+#progress-screen .chart-column {
+    height: 135px;
+    background: var(--card-background);
+    border-radius: 10px;
+}
+
+/* Blue gradient completion bars */
+#progress-screen .chart-bar {
+    background: linear-gradient(
+        180deg,
+        #60a5fa,
+        #3b82f6
+    );
+    border-radius: 10px 10px 0 0;
+}
+
+/* Future days */
+#progress-screen .chart-column.future {
+    background: transparent;
+    border: 1px dashed var(--border);
+}
+
+/* Day names */
+#progress-screen .chart-label {
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--text-primary);
+}
+
+/* Daily completion counts */
+#progress-screen .chart-count {
+    font-size: 11px;
+    color: var(--text-secondary);
+}
+
+/* Smaller mobile screens */
+@media (max-width: 380px) {
+    #progress-screen #weekly-chart {
+        padding: 16px 10px 20px;
+    }
+
+    #progress-screen .weekly-chart {
+        gap: 5px;
+    }
+}
+
+
+/* =========================================
+   v0.7 - Settings Screen Redesign
+   ========================================= */
+
+#settings-screen > h2 {
+    margin-bottom: 30px;
+    font-size: 28px;
+    letter-spacing: -0.8px;
+}
+
+/* Settings category headings */
+#settings-screen h3 {
+    margin: 28px 0 12px;
+    color: var(--text-secondary);
+    font-size: 14px;
+    font-weight: 700;
+}
+
+/* Settings rows */
+#settings-screen label {
+    min-height: 60px;
+    padding: 16px 18px;
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    font-weight: 500;
+}
+
+/* Modern Dark Mode toggle */
+#dark-mode-toggle {
+    appearance: none;
+    -webkit-appearance: none;
+    order: 2;
+    position: relative;
+    width: 48px !important;
+    height: 28px !important;
+    flex-shrink: 0;
+    margin: 0;
+    border-radius: 20px;
+    background: #9ca3af;
+    cursor: pointer;
+    transition: background 0.2s ease;
+}
+
+/* Switch thumb */
+#dark-mode-toggle::before {
+    content: "";
+    position: absolute;
+    top: 3px;
+    left: 3px;
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    background: white;
+    transition: transform 0.2s ease;
+}
+
+/* Enabled state */
+#dark-mode-toggle:checked {
+    background: var(--accent);
+}
+
+#dark-mode-toggle:checked::before {
+    transform: translateX(20px);
+}
+
+/* Data management buttons */
+#export-data-button,
+#reset-progress-button {
+    min-height: 56px;
+    padding: 16px 18px;
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    font-weight: 500;
+}
+
+/* Make destructive actions visually distinct */
+#reset-progress-button {
+    color: #dc2626;
+}
+
+body.dark-mode #reset-progress-button {
+    color: #fca5a5;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    #dark-mode-toggle,
+    #dark-mode-toggle::before {
+        transition: none;
+    }
+}
