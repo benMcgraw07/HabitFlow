@@ -1,0 +1,62 @@
+
+name: HabitFlow Daily Reminder
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  send-reminder:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Send test notification
+        env:
+          ONESIGNAL_API_KEY: ${{ secrets.ONESIGNAL_REST_API_KEY }}
+          TEST_SUBSCRIPTION_ID: ${{ secrets.ONESIGNAL_TEST_SUBSCRIPTION_ID }}
+        run: |
+          python3 - <<'PY'
+          import json
+          import os
+          import urllib.request
+
+          app_id = "105a3752-a2db-4cfd-8c0b-453a3472dfd8"
+          api_key = os.environ["ONESIGNAL_API_KEY"]
+          subscription_id = os.environ["TEST_SUBSCRIPTION_ID"]
+
+          if not api_key or not subscription_id:
+              raise ValueError("Required GitHub secrets are missing")
+
+          payload = {
+              "app_id": app_id,
+              "include_subscription_ids": [subscription_id],
+              "target_channel": "push",
+              "headings": {
+                  "en": "HabitFlow Reminder"
+              },
+              "contents": {
+                  "en": "Time to check in! Open HabitFlow and track your daily habits."
+              },
+              "url": "https://benmcgraw07.github.io/HabitFlow/"
+          }
+
+          request = urllib.request.Request(
+              "https://api.onesignal.com/notifications",
+              data=json.dumps(payload).encode("utf-8"),
+              headers={
+                  "Authorization": f"Key {api_key}",
+                  "Content-Type": "application/json"
+              },
+              method="POST"
+          )
+
+          with urllib.request.urlopen(request, timeout=30) as response:
+              result = json.load(response)
+
+          if not result.get("id"):
+              raise RuntimeError("OneSignal did not confirm notification creation")
+
+          print("HabitFlow test notification accepted by OneSignal")
+          PY
