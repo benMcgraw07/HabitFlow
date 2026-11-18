@@ -1,8 +1,16 @@
 
 name: HabitFlow Daily Reminder
 
+
 on:
+  # Allows us to test manually
   workflow_dispatch:
+
+  # Send a reminder every morning at 9 AM UK time
+  schedule:
+    - cron: "0 9 * * *"
+      timezone: "Europe/London"
+
 
 permissions:
   contents: read
@@ -31,7 +39,6 @@ jobs:
 
           payload = {
               "app_id": app_id,
-              "include_subscription_ids": [subscription_id],
               "target_channel": "push",
               "headings": {
                   "en": "HabitFlow Reminder"
@@ -41,6 +48,14 @@ jobs:
               },
               "url": "https://benmcgraw07.github.io/HabitFlow/"
           }
+
+            # Manual runs target only the test iPhone.
+            # Scheduled runs target all subscribed users.
+            if os.environ.get("GITHUB_EVENT_NAME") == "schedule":
+                payload["included_segments"] = ["All"]
+            else:
+                payload["include_subscription_ids"] = [subscription_id]
+
 
           request = urllib.request.Request(
               "https://api.onesignal.com/notifications",
