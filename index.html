@@ -130,14 +130,55 @@
                 }
 
 
+            
             } catch (error) {
                 console.error(
                     "OneSignal initialization failed:",
                     error
                 );
+
+                const pushButton =
+                    document.getElementById("enable-push-button");
+
+                const pushStatus =
+                    document.getElementById("push-notification-status");
+
+                if (pushButton && pushStatus) {
+                    pushButton.disabled = true;
+                    pushButton.textContent = "Notifications Unavailable";
+
+                    pushStatus.textContent =
+                        "Push notifications could not be started. " +
+                        "Please check your connection and try refreshing.";
+                }
+            }
+
+        });
+    
+    
+    } else {
+        // OneSignal is only configured for GitHub Pages.
+        // Wait until the HTML has loaded before updating Settings.
+
+        document.addEventListener("DOMContentLoaded", () => {
+            const pushButton =
+                document.getElementById("enable-push-button");
+
+            const pushStatus =
+                document.getElementById("push-notification-status");
+
+            if (pushButton && pushStatus) {
+                pushButton.disabled = true;
+                pushButton.textContent = "Notifications Unavailable";
+
+                pushStatus.textContent =
+                    "Push notifications are available through " +
+                    "the deployed HabitFlow application.";
             }
         });
     }
+
+
 </script>
 
 </head>
@@ -290,20 +331,25 @@
                     even when the app is closed.
                 </p>
 
+                
                 <button
                     type="button"
                     id="enable-push-button"
+                    disabled
                 >
-                    Enable Push Notifications
+                    Checking notification availability...
                 </button>
 
+
+                
                 <p
                     id="push-notification-status"
                     role="status"
                     aria-live="polite"
                 >
-                    Push notifications are not enabled.
+                    Checking whether push notifications are supported...
                 </p>
+
 
 <!--
                 <h3>Notifications</h3>
