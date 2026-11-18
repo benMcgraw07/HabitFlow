@@ -44,6 +44,92 @@
 
                 console.log("HabitFlow OneSignal initialized");
 
+
+                /* =========================================
+                HabitFlow - Push Notification Controls
+                ========================================= */
+
+                const pushButton =
+                    document.getElementById("enable-push-button");
+
+                const pushStatus =
+                    document.getElementById("push-notification-status");
+
+                if (pushButton && pushStatus) {
+
+                    // Update the interface based on subscription status
+                    function updatePushStatus() {
+
+                        if (OneSignal.User.PushSubscription.optedIn) {
+                            pushButton.textContent = "Notifications Enabled";
+                            pushButton.disabled = true;
+
+                            pushStatus.textContent =
+                                "Push notifications are enabled on this device.";
+
+                        } else if (
+                            OneSignal.Notifications.permissionNative === "denied"
+                        ) {
+                            pushButton.textContent = "Notifications Blocked";
+                            pushButton.disabled = true;
+
+                            pushStatus.textContent =
+                                "Notifications are blocked. Enable them " +
+                                "in your device or browser settings.";
+
+                        } else {
+                            pushButton.textContent = "Enable Push Notifications";
+                            pushButton.disabled = false;
+
+                            pushStatus.textContent =
+                                "Push notifications are not enabled.";
+                        }
+                    }
+
+                    // Display the current subscription status
+                    updatePushStatus();
+
+                    // Request permission when the user taps the button
+                    pushButton.addEventListener("click", async () => {
+
+                        pushButton.disabled = true;
+                        pushStatus.textContent =
+                            "Requesting notification permission...";
+
+                        try {
+                            // Request permission directly from the click
+                            await OneSignal.Notifications.requestPermission();
+
+                            if (OneSignal.Notifications.permission) {
+
+                                // Subscribe this device to push notifications
+                                await OneSignal.User.PushSubscription.optIn();
+                            }
+
+                            updatePushStatus();
+
+                        } catch (error) {
+
+                            console.error(
+                                "HabitFlow push notification error:",
+                                error
+                            );
+
+                            pushStatus.textContent =
+                                "Unable to enable notifications. Please try again.";
+
+                            pushButton.disabled = false;
+                        }
+                    });
+
+                    // Keep the interface updated if the subscription changes
+                    OneSignal.User.PushSubscription.addEventListener(
+                        "change",
+                        updatePushStatus
+                    );
+                }
+
+
             } catch (error) {
                 console.error(
                     "OneSignal initialization failed:",
@@ -194,6 +280,31 @@
                 <button id="reset-progress-button" type="button">
                     Reset All Progress
                 </button>
+
+
+                <!-- Push Notifications -->
+                <h3>Push Notifications</h3>
+
+                <p>
+                    Get HabitFlow reminders on your device,
+                    even when the app is closed.
+                </p>
+
+                <button
+                    type="button"
+                    id="enable-push-button"
+                >
+                    Enable Push Notifications
+                </button>
+
+                <p
+                    id="push-notification-status"
+                    role="status"
+                    aria-live="polite"
+                >
+                    Push notifications are not enabled.
+                </p>
+
 <!--
                 <h3>Notifications</h3>
                 <label>
