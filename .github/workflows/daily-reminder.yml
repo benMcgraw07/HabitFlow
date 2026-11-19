@@ -8,7 +8,7 @@ on:
 
   # Send a reminder every morning at 9 AM UK time
   schedule:
-    - cron: "17 11 * * *"
+    - cron: "0 14 * *"
       timezone: "Europe/London"
 
 
