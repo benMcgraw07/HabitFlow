@@ -49,12 +49,12 @@ jobs:
               "url": "https://benmcgraw07.github.io/HabitFlow/"
           }
 
-            # Manual runs target only the test iPhone.
-            # Scheduled runs target all subscribed users.
-            if os.environ.get("GITHUB_EVENT_NAME") == "schedule":
-                payload["included_segments"] = ["All"]
-            else:
-                payload["include_subscription_ids"] = [subscription_id]
+          # Manual runs target only the test iPhone.
+          # Scheduled runs target all subscribed users.
+          if os.environ.get("GITHUB_EVENT_NAME") == "schedule":
+              payload["included_segments"] = ["All"]
+          else:
+              payload["include_subscription_ids"] = [subscription_id]
 
 
           request = urllib.request.Request(
