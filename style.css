@@ -1072,3 +1072,32 @@ body.dark-mode #reset-progress-button {
     line-height: 1.5;
     color: var(--text-secondary);
 }
+
+
+
+
+/* Accessibility: support enlarged text */
+@media (max-width: 480px) {
+
+    .app {
+        padding-bottom: calc(
+            170px + env(safe-area-inset-bottom)
+        );
+    }
+
+    .app-header {
+        flex-wrap: wrap;
+    }
+
+    .weekday-options {
+        grid-template-columns:
+            repeat(auto-fit, minmax(68px, 1fr));
+    }
+
+    .bottom-nav .nav-button,
+    #selected-week-label {
+        min-width: 0;
+        overflow-wrap: anywhere;
+        white-space: normal;
+    }
+}
