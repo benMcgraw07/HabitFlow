@@ -1,0 +1,136 @@
+TAP version 13
+# Subtest: getTodayDate uses local ISO-format calendar date
+ok 1 - getTodayDate uses local ISO-format calendar date
+  ---
+  duration_ms: 3.436725
+  type: 'test'
+  ...
+# Subtest: a Monday-based week has exactly seven ordered days
+ok 2 - a Monday-based week has exactly seven ordered days
+  ---
+  duration_ms: 20.656999
+  type: 'test'
+  ...
+# Subtest: week boundaries cross calendar years
+ok 3 - week boundaries cross calendar years
+  ---
+  duration_ms: 1.492847
+  type: 'test'
+  ...
+# Subtest: future dates are marked, but the current date is not
+ok 4 - future dates are marked, but the current date is not
+  ---
+  duration_ms: 1.63076
+  type: 'test'
+  ...
+# Subtest: previous-week navigation returns seven non-future days
+ok 5 - previous-week navigation returns seven non-future days
+  ---
+  duration_ms: 2.477015
+  type: 'test'
+  ...
+# Subtest: weekday formatting starts with Monday and does not mutate input
+ok 6 - weekday formatting starts with Monday and does not mutate input
+  ---
+  duration_ms: 1.480747
+  type: 'test'
+  ...
+# Subtest: empty week yields zero count and 0%, not NaN
+ok 7 - empty week yields zero count and 0%, not NaN
+  ---
+  duration_ms: 3.640939
+  type: 'test'
+  ...
+# Subtest: one scheduled Monday without a completion has 0%
+ok 8 - one scheduled Monday without a completion has 0%
+  ---
+  duration_ms: 2.578331
+  type: 'test'
+  ...
+# Subtest: one completed scheduled Monday yields 100%
+ok 9 - one completed scheduled Monday yields 100%
+  ---
+  duration_ms: 8.318803
+  type: 'test'
+  ...
+# Subtest: all seven weekdays are scheduled, but future days excluded
+ok 10 - all seven weekdays are scheduled, but future days excluded
+  ---
+  duration_ms: 2.366485
+  type: 'test'
+  ...
+# Subtest: even recorded future completions do not count yet
+ok 11 - even recorded future completions do not count yet
+  ---
+  duration_ms: 1.572468
+  type: 'test'
+  ...
+# Subtest: completion for another date does not mark today complete
+ok 12 - completion for another date does not mark today complete
+  ---
+  duration_ms: 1.646096
+  type: 'test'
+  ...
+# Subtest: completion for unknown habit does not affect figures
+ok 13 - completion for unknown habit does not affect figures
+  ---
+  duration_ms: 1.27395
+  type: 'test'
+  ...
+# Subtest: creation date prevents counting an activity before it exists
+ok 14 - creation date prevents counting an activity before it exists
+  ---
+  duration_ms: 2.021591
+  type: 'test'
+  ...
+# Subtest: history selects schedule effective for its exact date
+ok 15 - history selects schedule effective for its exact date
+  ---
+  duration_ms: 1.988846
+  type: 'test'
+  ...
+# Subtest: historical schedules work even if entries are not sorted
+ok 16 - historical schedules work even if entries are not sorted
+  ---
+  duration_ms: 0.988294
+  type: 'test'
+  ...
+# Subtest: no historical schedule before first effective date
+ok 17 - no historical schedule before first effective date
+  ---
+  duration_ms: 0.802672
+  type: 'test'
+  ...
+# Subtest: legacy habits without scheduleHistory fall back to weekdays
+ok 18 - legacy habits without scheduleHistory fall back to weekdays
+  ---
+  duration_ms: 0.638827
+  type: 'test'
+  ...
+# Subtest: changing a schedule does not rewrite Monday historical stats
+ok 19 - changing a schedule does not rewrite Monday historical stats
+  ---
+  duration_ms: 1.350687
+  type: 'test'
+  ...
+# Subtest: percentage rounds for two of three activities
+ok 20 - percentage rounds for two of three activities
+  ---
+  duration_ms: 1.266587
+  type: 'test'
+  ...
+# Subtest: separate habits are counted independently
+ok 21 - separate habits are counted independently
+  ---
+  duration_ms: 1.144519
+  type: 'test'
+  ...
+1..21
+# tests 21
+# suites 0
+# pass 21
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 170.465151

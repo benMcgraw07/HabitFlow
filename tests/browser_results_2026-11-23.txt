@@ -1,0 +1,21 @@
+python : test_01_navigation_and_empty_state (browser_integration.HabitFlowBrowserTests.test_01_navigation_and_empty_state) ... ok
+At line:1 char:1
++ python -m unittest discover -s tests -p "browser_*.py" -v 2>&1 | Tee- ...
++ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (test_01_navigat...y_state) ... ok:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+test_02_add_habit_and_real_indexeddb (browser_integration.HabitFlowBrowserTests.test_02_add_habit_and_real_indexeddb) ... ok
+test_03_reload_preserves_habit (browser_integration.HabitFlowBrowserTests.test_03_reload_preserves_habit) ... ok
+test_04_completion_updates_weekly_stats_and_persists (browser_integration.HabitFlowBrowserTests.test_04_completion_updates_weekly_stats_and_persists) ... ok
+test_05_edit_preserves_identity_and_schedule_history (browser_integration.HabitFlowBrowserTests.test_05_edit_preserves_identity_and_schedule_history) ... ok
+test_06_deletion_clears_related_completions (browser_integration.HabitFlowBrowserTests.test_06_deletion_clears_related_completions) ... ok
+test_07_reset_progress_keeps_habits (browser_integration.HabitFlowBrowserTests.test_07_reset_progress_keeps_habits) ... ok
+test_08_dark_mode_survives_reload (browser_integration.HabitFlowBrowserTests.test_08_dark_mode_survives_reload) ... ok
+test_09_export_contains_saved_data (browser_integration.HabitFlowBrowserTests.test_09_export_contains_saved_data) ... ok
+test_10_offline_cached_app_launches (browser_integration.HabitFlowBrowserTests.test_10_offline_cached_app_launches) ... ok
+
+----------------------------------------------------------------------
+Ran 10 tests in 6.945s
+
+OK
