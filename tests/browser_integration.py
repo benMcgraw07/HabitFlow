@@ -174,5 +174,64 @@ class HabitFlowBrowserTests(unittest.TestCase):
         self.nav("habits")
         expect(self.page.locator("#habits-list .habit-card strong")).to_have_text("Read for 20 minutes")
 
+    def test_11_weekday_edit_preserves_prior_week_in_indexeddb(self):
+        """Seed an older habit in real IndexedDB, then edit using the real UI."""
+        self.add_today_habit("Historical regression check")
+
+        # A new UI habit cannot have dates in the past. Set up an older
+        # fixture in IndexedDB, while testing the ACTUAL edit flow via UI.
+        self.page.evaluate("""async () => {
+            const req = db.transaction('habits', 'readonly')
+                          .objectStore('habits').getAll();
+            const rows = await new Promise((resolve, reject) => {
+                req.onsuccess = () => resolve(req.result);
+                req.onerror = () => reject(req.error);
+            });
+            const habit = rows[0];
+            const prevMonday = getCurrentWeekDates(-1)[0].date;
+            habit.createdOn = prevMonday;
+            habit.weekdays = [1, 3]; // Last week: Monday and Wednesday
+            habit.scheduleHistory = [{
+                effectiveFrom: prevMonday,
+                weekdays: [1, 3]
+            }];
+            await saveHabitToDatabase(habit);
+            await updateCompletionInDatabase(habit.id, prevMonday, true);
+        }""")
+
+        # Reload to ensure data comes from IndexedDB, not in-memory state.
+        self.open_app()
+        self.nav("progress")
+        self.page.locator("#previous-week-button").click()
+        expected = "1/2 scheduled activities completed"
+        expect(self.page.locator("#weekly-statistics")).to_contain_text(expected)
+        expect(self.page.locator("#weekly-statistics")).to_contain_text("50% completion")
+
+        # Edit the schedule via actual form controls, not by modifying JS state.
+        self.nav("habits")
+        self.page.locator("#habits-list .habit-card button", has_text="Edit").click()
+        self.page.locator('input[name="weekdays"][value="1"]').uncheck()
+        self.page.locator('input[name="weekdays"][value="3"]').uncheck()
+        self.page.locator('input[name="weekdays"][value="2"]').check()
+        self.page.locator("#save-habit-button").click()
+
+        record = self.db_records("habits")[0]
+        self.assertEqual(record["weekdays"], [2])
+        self.assertEqual(len(record["scheduleHistory"]), 2)
+        self.assertEqual(record["scheduleHistory"][0]["weekdays"], [1, 3])
+        self.assertEqual(record["scheduleHistory"][1]["weekdays"], [2])
+
+        # Progress screen retains its selected week while switching tabs.
+        # We were already viewing last week before editing.
+        self.nav("progress")
+        expect(self.page.locator("#weekly-statistics")).to_contain_text(expected)
+        expect(self.page.locator("#weekly-statistics")).to_contain_text("50% completion")
+        self.open_app()
+        self.nav("progress")
+        self.page.locator("#previous-week-button").click()
+        expect(self.page.locator("#weekly-statistics")).to_contain_text(expected)
+        expect(self.page.locator("#weekly-statistics")).to_contain_text("50% completion")
+        self.assertEqual(len(self.db_records("completions")), 1)
+
 if __name__ == "__main__":
     unittest.main(verbosity=2)
